@@ -1,0 +1,138 @@
+
+@import url('https://cdnjs.cloudflare.com/ajax/libs/react-datepicker/2.8.0/react-datepicker.min.css');
+
+$red: #D73252;
+$header-blue: #06038D;
+$input-blue: #3434E0;
+$magenta: #C6007E;
+
+body{
+    color: #000;
+    background-color:#F2F2F2;
+    font-family: Roboto;
+    font-style: normal;
+    font-weight: normal;
+}
+
+.content{
+    height: 98vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+   // background-image: url("/public/images/background.svg");
+   .content-bg{
+    z-index: -1;
+    position: fixed;
+   }
+}
+
+.destination-box{
+        width: 570px;
+        min-height: 365px;
+        background: #FFFFFF;
+        margin: 0 auto;
+    .destination-header{
+        min-height: 50px;
+        background-color: $header-blue;
+        display: flex;
+        align-items: center;
+        
+        svg{
+            margin: 10px 15px;
+        }
+
+        h2{
+            margin: 0;
+            color: white;
+            font-family:'Roboto';
+            font-style: normal;
+            font-weight: 500;
+            font-size: 17px;
+            line-height: 21px;
+            text-transform: uppercase;
+        }
+    }   
+    .destination-content{
+        
+        padding: 25px;
+        .flight-selection, .date-selection{
+            display: flex;
+            margin-bottom: 50px;
+            .error-message{
+               // width: calc(50% - 10px);
+               padding: 15px 0;
+               display: flex;
+               align-items: center;
+               p{
+                margin: 0;
+                font-size: 13px;
+                line-height: 15px;   
+                color: $magenta;
+               }
+               svg{
+                margin-right: 10px;
+               }
+            }
+            .flight-selection-origin, .date-selection-origin {
+                margin-right: 20px;
+            }
+        }
+        .date-selection{
+            .react-datepicker-wrapper{
+                width: 100%;
+                .react-datepicker__input-container{
+                    width: 100%;
+                }
+            }
+        }
+        .input-holder{
+            width: calc(50% - 10px);
+            height: 50px;
+
+       
+            input, .date-input{
+            width: 100%;
+                background: #fff;
+                border: 1px solid #919191;
+                box-sizing: border-box;
+                border-radius: 2px;
+                padding: 15px;
+                &:focus{
+                    outline: none;
+                    border: 2px solid $magenta;
+                    box-sizing: border-box;
+                    box-shadow: 0px 0px 10px rgba(198, 0, 126, 0.35);
+                    border-radius: 3px;
+                    background: #FFF2FA;
+                    padding: 14px;
+                }
+            }
+        }
+        .search-destination{
+            display: flex;
+            justify-content: center;
+            .search-btn{
+                background-color: $input-blue;
+                width: 230px;
+                height: 50px;
+                border-radius: 3px;
+                color: #fff;
+                display: flex;
+                font-family:'Roboto';
+                font-style: normal;
+                font-weight: 500;
+                font-size: 18px;
+                line-height: 21px;
+                align-items: center;
+                justify-content: center;
+                text-transform: uppercase;
+                &:hover{
+                    background-color: $magenta;
+                    cursor: pointer;
+                }
+            }
+        }
+       
+    }
+
+}
