@@ -4,6 +4,7 @@ import Logo from '../../../public/images/mito_logo.svg';
 import Attention from '../../../public/images/attention.svg';
 import DatePicker from "react-datepicker";
 import Select from 'react-select'
+import dayjs from 'dayjs'; 
 import axios from "axios";
 
 const Destionation = () => {
@@ -14,6 +15,7 @@ const Destionation = () => {
   const [options, setoptions] = useState([]);
   const [filteredOptions, setFilteredOptions] = useState([]);
   const [selectedOriginPort, setSelectedOriginPort] = useState([]);
+  const [selectedDestinPort, setSelectedDestinPort] = useState([]);
 
    const GetPorts = async () => {
       try {
@@ -35,7 +37,26 @@ const Destionation = () => {
       }
    }
 
-   const HandleAirPortSelect = (originport, e) => {
+   const SearchFlights = async () => {
+    const OriginIata = selectedOriginPort.value;
+    const DestinIata = selectedDestinPort.iata;
+    const DepartureDate = dayjs(startDate).format('YYYY-MM-DD');
+    const RetrunDate = dayjs(endDate).format('YYYY-MM-DD');
+
+    try {
+
+      const responsedep = await axios.get(`https://mock-air.herokuapp.com/search?departureStation=${OriginIata}&arrivalStation=${DestinIata}&date=${DepartureDate}`);
+      const responseret = await axios.get(`https://mock-air.herokuapp.com/search?departureStation=${DestinIata}&arrivalStation=${OriginIata}&date=${RetrunDate}`);
+      
+      console.log(responsedep);
+      console.log(responseret);
+
+    } catch (error) {
+      console.error(error);
+    }
+ }
+
+   const HandleOriginPortSelect = (originport, e) => {
 
      setSelectedOriginPort(originport);
 
@@ -52,14 +73,25 @@ const Destionation = () => {
       });
   
       setFilteredOptions(connections);
-      console.log(connections);
+   //   console.log(connections);
      }else{
       setFilteredOptions([]);
      }
     console.log(originport);
-    console.log(e);
+   // console.log(e);
   
   }
+  
+  const HandleDestinPortSelect = (destinport, e) => {
+
+    setSelectedDestinPort(destinport);
+
+   console.log(destinport);
+  // console.log(e);
+ 
+ }
+
+
   useEffect(() => {
     GetPorts();
   }, []);
@@ -86,7 +118,7 @@ const Destionation = () => {
                 options = {options}
                 
                 onChange={(val, e) => {
-                  HandleAirPortSelect(val, e);
+                  HandleOriginPortSelect(val, e);
                 }}
               />
 {/*              <select placeholder="Origin" onFocus={HandleAirPortSelect} className="flight-selection-origin" >
@@ -105,7 +137,9 @@ const Destionation = () => {
                   isSearchable={true}
                   name="destination"
                   options = {filteredOptions}
-                 // onFocus={HandleAirPortSelect}
+                  onChange={(val, e) => {
+                    HandleDestinPortSelect(val, e);
+                  }}
                 />
             <div className="error-message destination"><Attention /><p>You shall not pass</p></div>
           </div>
@@ -137,7 +171,7 @@ const Destionation = () => {
           </div>
         </div>
         <div className="search-destination">
-          <a className="search-btn">Search</a>
+          <a onClick={SearchFlights} className="search-btn">Search</a>
         </div>
       </div>
     </div>
