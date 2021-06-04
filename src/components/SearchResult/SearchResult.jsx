@@ -24,12 +24,12 @@ const SearchResult = () => {
     ReturnDate : "2020-07-01",
   });
 
-/*   const [selectedDepTicket, setSelectedDepTicket] = useState(null );
+  const [selectedDepTicket, setSelectedDepTicket] = useState(null );
 
   const [selectedRetTicket, setSelectedRetTicket] = useState(null);
- */
-  const [selectedDepTicket, setSelectedDepTicket] = useState( {
-    OriginIata: "BUD",
+
+/*   const [selectedDepTicket, setSelectedDepTicket] = useState( {
+  OriginIata: "BUD",
    DestinIata : "BCN",
    DepartureDate : "2020-07-01T05:50:00+0200",
    ArrivalDate : "2020-07-01T08:50:00+0200",
@@ -38,14 +38,14 @@ const SearchResult = () => {
  });
 
   const [selectedRetTicket, setSelectedRetTicket] = useState( {
-    OriginIata: "BCN",
+   OriginIata: "BCN",
    DestinIata : "BUD",
    DepartureDate : "2020-07-01T05:50:00+0200",
    ArrivalDate : "2020-07-01T08:50:00+0200",
    Price: 60,
    TicketId: "",
 
- });
+ }); */
 
   const [availableTickets, setAvailableTickets] = useState([]);
   const [availableReturnTickets, setAvailableReturnTickets] = useState([]);
@@ -57,6 +57,7 @@ const SearchResult = () => {
   const nextReturnDate = dayjs(selectedFlight.ReturnDate).add(1, 'd');
 
   const [isLoading, setIsLoading] = useState(true);
+  const [purchased, setPurchased] = useState(false);
 
   const SearchFlights = async () => {
 
@@ -71,12 +72,9 @@ const SearchResult = () => {
       const responsedep = await axios.get(`https://mock-air.herokuapp.com/search?departureStation=${selectedFlight.OriginIata}&arrivalStation=${selectedFlight.DestinIata}&date=${selectedFlight.DepartureDate}`);
       const responseret = await axios.get(`https://mock-air.herokuapp.com/search?departureStation=${selectedFlight.DestinIata}&arrivalStation=${selectedFlight.OriginIata}&date=${selectedFlight.ReturnDate}`);
       
-     // console.log(responsedep);
-     // console.log(responseret);
       setAvailableTickets(responsedep.data);
       setAvailableReturnTickets(responseret.data);
       setIsLoading(false);
-     // console.log(availableTickets);
       
     } catch (error) {
       console.error(error);
@@ -105,20 +103,42 @@ const SearchResult = () => {
     })
  } */
 
+ const TicketListItem = (selectedTicket) =>{
 
- const isButtonSelected = (ticketId , dir) => {
-   if(dir === "dep"){
-    if(selectedDepTicket.TicketId === ticketId)
-      return true
-    return false;
-   }else if(dir === "ret"){
-      if(selectedRetTicket.TicketId === ticketId)
-      return true
-    return false;
-   }
+  const Ticket = {...selectedTicket}
+
+  return (
+    <div className="ticket-listitem" >
+      <div className="mini-calendar">
+        <div className="month">
+            {dayjs(Ticket.DepartureDate).format("MMM")}
+        </div>
+        <div className="day">
+        {dayjs(Ticket.DepartureDate).format("D")}
+        </div>
+        </div>
+        <div className="dep-destination">
+          <div className="dep-destination-ports">
+          <span>{selectedFlight.DepartureShortName} - </span>
+          <span>{selectedFlight.ArrivalShortName}</span>
+          </div>
+          <div className="dep-destination-time">
+            {dayjs(Ticket.DepartureDate).format("ddd hh:mm")} - {dayjs(Ticket.ArrivalDate).format("hh:mm")}
+          </div>
+        </div>
+    </div>
+  )
  }
 
- const HandleDepTicketSelect = (fare, ticket) =>{
+
+
+ const HandlePurchase = () => {
+  if(!IsBasketEmpty()){
+    setPurchased(true);
+  }
+ }
+
+ const HandleDepTicketSelect = (fare, ticket) => {
 
   console.log(fare.price);
   console.log(ticket);
@@ -131,32 +151,29 @@ const SearchResult = () => {
   
  }
 
- const HandleRetTicketSelect = (fare, ticket) =>{
+ const HandleRetTicketSelect = (fare, ticket) => {
 
-  console.log(fare.price);
-  console.log(ticket);
-  const modRetTicket = {...selectedRetTicket}
-  modRetTicket.Price = fare.price;
-  modRetTicket.DepartureDate = ticket.departure;
-  modRetTicket.TicketId = fare.fareSellKey;
-  setSelectedRetTicket(modRetTicket);
+    console.log(fare.price);
+    console.log(ticket);
+    const modRetTicket = {...selectedRetTicket}
+    modRetTicket.Price = fare.price;
+    modRetTicket.DepartureDate = ticket.departure;
+    modRetTicket.TicketId = fare.fareSellKey;
+    setSelectedRetTicket(modRetTicket);
 
-  
  }
 
+ const HandleDepDateChange = (newdate) => {
 
-
- const HandleDepDateChange = (newdate) =>{
-
-  newdate = dayjs(newdate).format("YYYY-MM-DD");
-  console.log(newdate);
-  const modFllight = {...selectedFlight};
-  modFllight.DepartureDate = newdate;
-  setSelectedFlight(modFllight);
-  setIsLoading(true);
+    newdate = dayjs(newdate).format("YYYY-MM-DD");
+    console.log(newdate);
+    const modFllight = {...selectedFlight};
+    modFllight.DepartureDate = newdate;
+    setSelectedFlight(modFllight);
+    setIsLoading(true);
  }
 
- const HandleRetDateChange = (newdate) =>{
+ const HandleRetDateChange = (newdate) => {
 
   newdate = dayjs(newdate).format("YYYY-MM-DD");
   console.log(newdate);
@@ -165,6 +182,12 @@ const SearchResult = () => {
   setSelectedFlight(modFllight);
   setIsLoading(true);
 
+ }
+
+ const ResetSearch = () => {
+  setSelectedDepTicket(null);
+  setSelectedRetTicket(null);
+  setPurchased(false);
  }
 
  const GetTicketSum = () => {
@@ -181,6 +204,20 @@ const SearchResult = () => {
   }
  }
 
+ const isButtonSelected = (ticketId , dir) => {
+  if(!IsBasketEmpty()){
+   if(dir === "dep"){
+    if(selectedDepTicket?.TicketId === ticketId)
+      return true
+    return false;
+   }else if(dir === "ret"){
+      if(selectedRetTicket?.TicketId === ticketId)
+      return true
+    return false;
+   }
+  }
+ }
+
  useEffect(() => {
   SearchFlights();
 
@@ -188,7 +225,34 @@ const SearchResult = () => {
 }, [selectedFlight]);
   
     return (
+      <>
+      {(purchased ?  
+      <div className="modal-wrapper">
+        <div className="confirm-modal">
+          <div className="confirm-modal-title">
+            Thanks for buying your tickets at mito airlines
+          </div>
+          <div className="confirm-modal-content">
+            <div className="confirm-modal-tickets">
+
+                {TicketListItem(selectedDepTicket)}
+               {TicketListItem(selectedRetTicket)}
+            </div>
+            <div className="confirm-modal-sum">
+              <div className="confirm-modal-sum-price">
+                Total: <span class="price" >${GetTicketSum()}</span>
+              </div>
+              <div className="confirm-modal-sum-reset">
+                <a onClick={() => ResetSearch()}> No, Thanks. (Reset)</a>
+              </div>
+          </div>
+          </div>
+        </div>
+        </div>
+      : "" 
+      )}
     <div className="result-selection">
+
       <div className="result-selection-header">
         <Logo className="mito-logo" />
         <div className="result-selected-ports">
@@ -221,50 +285,12 @@ const SearchResult = () => {
                : 
                 <>
                 {(selectedDepTicket != null ?
-                <div className="ticket-basket-flight-listitem" >
-                  <div className="mini-calendar">
-                    <div className="month">
-                        {dayjs(selectedDepTicket.DepartureDate).format("MMM")}
-                    </div>
-                    <div className="day">
-                    {dayjs(selectedDepTicket.DepartureDate).format("DD")}
-                    </div>
-
-                    </div>
-                    <div className="dep-destination">
-                      <div className="dep-destination-ports">
-                       <span>{selectedFlight.DepartureShortName} - </span>
-                       <span>{selectedFlight.ArrivalShortName}</span>
-                      </div>
-                      <div className="dep-destination-time">
-                        {dayjs(selectedDepTicket.DepartureDate).format("ddd hh:mm")} - {dayjs(selectedDepTicket.ArrivalDate).format("hh:mm")}
-                      </div>
-                    </div>
-                </div>
+                    TicketListItem(selectedDepTicket)
                 : 
                 "" )}
                  {(selectedRetTicket != null ?
 
-                  <div className="ticket-basket-flight-listitem" >
-                    <div className="mini-calendar">
-                      <div className="month">
-                          {dayjs(selectedRetTicket.DepartureDate).format("MMM")}
-                      </div>
-                      <div className="day">
-                       {dayjs(selectedRetTicket.DepartureDate).format("DD")}
-                      </div>
-
-                      </div>
-                      <div className="dep-destination">
-                        <div className="dep-destination-ports">
-                          <span>{selectedFlight.ArrivalShortName} - </span>
-                          <span>{selectedFlight.DepartureShortName}</span>
-                        </div>
-                        <div className="dep-destination-time">
-                          {dayjs(selectedRetTicket.DepartureDate).format("ddd hh:mm")} - {dayjs(selectedRetTicket.ArrivalDate).format("hh:mm")}
-                        </div>
-                      </div>
-                  </div>
+                    TicketListItem(selectedRetTicket)
                   : 
                   "" )}
                 </>            
@@ -275,7 +301,7 @@ const SearchResult = () => {
             Total <span className="price total">${GetTicketSum()}</span>
           </div>
           <div className="ticket-basket-purchase" >
-            <button className={(IsBasketEmpty ? "" : "disabled" )} >Pay Now</button>
+            <button onClick={() => HandlePurchase()} className={(IsBasketEmpty ? "" : "disabled" )} >Pay Now</button>
           </div>
          </div>
        </div>
@@ -420,6 +446,7 @@ const SearchResult = () => {
        </div>
       </div>
     </div>
+    </>
     );
   };
   
