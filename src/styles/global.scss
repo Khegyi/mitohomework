@@ -68,6 +68,28 @@ body{
     position: fixed;
    }
 }
+
+@mixin searchBTN {
+    background-color: $input-blue;
+    width: 230px;
+    height: 50px;
+    border-radius: 3px;
+    color: #fff;
+    display: flex;
+    font-family:'Roboto';
+    font-style: normal;
+    font-weight: 500;
+    font-size: 18px;
+    line-height: 21px;
+    align-items: center;
+    justify-content: center;
+    text-transform: uppercase;
+    &:hover{
+        background-color: $magenta;
+        cursor: pointer;
+    }
+}
+
 @mixin mini-ticket{
     display: flex;
     padding: 15px;
@@ -117,9 +139,10 @@ body{
 
 .destination-box{
         width: 570px;
-        min-height: 365px;
+        height: 365px;
         background: #FFFFFF;
         margin: 0 auto;
+        align-self: center;
     .destination-header{
         min-height: 50px;
         background-color: $header-blue;
@@ -150,7 +173,8 @@ body{
             .error-message{
                // width: calc(50% - 10px);
                padding: 15px 0;
-               display: flex;
+              display: flex;
+              
                align-items: center;
                p{
                 margin: 0;
@@ -165,14 +189,35 @@ body{
             .flight-selection-origin, .date-selection-origin {
                 margin-right: 20px;
             }
+            .input-holder .basic-single{
+                .select__indicators{
+                    display: none;
+                } .select__control{
+                    background: #FFFFFF;
+                    border: 1px solid #919191;
+                    box-sizing: border-box;
+                    border-radius: 2px;
+                    height: 50px;
+                }
+            }
         }
         .date-selection{
+          
             .react-datepicker-wrapper{
                 width: 100%;
                 .react-datepicker__input-container{
                     width: 100%;
                 }
             }
+            .input-holder{
+                position: relative;
+                > svg{
+                    position: absolute;
+                    right: 15px;
+                    top: 13px;
+                }
+            }
+
         }
         .input-holder{
             width: calc(50% - 10px);
@@ -201,24 +246,7 @@ body{
             display: flex;
             justify-content: center;
             .search-btn{
-                background-color: $input-blue;
-                width: 230px;
-                height: 50px;
-                border-radius: 3px;
-                color: #fff;
-                display: flex;
-                font-family:'Roboto';
-                font-style: normal;
-                font-weight: 500;
-                font-size: 18px;
-                line-height: 21px;
-                align-items: center;
-                justify-content: center;
-                text-transform: uppercase;
-                &:hover{
-                    background-color: $magenta;
-                    cursor: pointer;
-                }
+                @include searchBTN;
             }
         }
        
@@ -320,11 +348,23 @@ body{
     .result-selection-content{
         margin-top: 60px;
         display: flex;
+
+        @media screen and (max-width: 850px) {
+            flex-direction: column;
+        }
+
         .result-selection-left{
             flex: 3;
             width: 230px;
             margin: 130px 0 0 20px;
             position: fixed;
+            @media screen and (max-width: 850px) {
+                margin: 0px 0 0 0px;
+                width: 100%;
+                position: fixed;
+                z-index: 100;
+
+            }
             .ticket-basket{
                 min-height: 160px;
                .price{
@@ -369,6 +409,9 @@ body{
                 }
                 .ticket-basket-purchase{
                     margin-top: 20px;
+                    @media screen and (max-width: 850px) {
+                        margin-top: 0px;
+                    }
                     button{
                         background: $magenta;
                         text-transform: uppercase;
@@ -390,10 +433,22 @@ body{
             flex: 9;
             margin: 0 20px 0 270px;
             width: 100%;
+
+            @media screen and (max-width: 850px) {
+                flex: 9 1;
+                margin: 300px 0px 0;
+                width: 100%;
+
+            }
             .result-selection-title{
                 height: 130px;
                 display: flex;
                 align-items: center;
+
+                @media screen and (max-width: 850px) {
+                    justify-content: center;
+    
+                }
                 h2{
                     color: $title-blue;
                     font-size: 40px;
@@ -419,7 +474,7 @@ body{
                     align-items: center;
                     .direction{
                         margin-left: 20px;
-                        flex: 1;
+                       // flex: 1;
                         font-size: 18px;
                         line-height: 21px;
                     }
@@ -468,10 +523,15 @@ body{
                         font-size: 13px;
                         line-height: 15px;
                         display: contents;
-                        svg{
-                            &:hover{
-                                cursor: pointer;
-                            }
+                        a{
+                            display: flex;
+                            align-items: center;
+                        }
+                        &:hover{
+                            cursor: pointer;
+                        }
+                        .placeholder{
+                            width: 40px;
                         }
                     }
                 }
@@ -501,6 +561,10 @@ body{
                                 width: 160px;
                                 font-size: 17px;
                                 font-weight: bolder;
+                                
+                                @media screen and (max-width: 850px) {
+                                    width: 60px;
+                                }
                                 &.selected{
                                     background-color: $magenta;
                                     color:#fff;
@@ -529,6 +593,58 @@ body{
                             }
                         }
 
+                    }
+                }
+                &.inbound{
+
+                  .date-selection-return{
+                    display: flex;
+                    align-items: center;
+                    justify-content: center; 
+                    flex-direction: column;
+                        input, .date-input{
+                                width: 250px;
+                                background: #fff;
+                                border: 1px solid #919191;
+                                box-sizing: border-box;
+                                border-radius: 2px;
+                                padding: 15px;
+                                
+                                &:focus{
+                                    outline: none;
+                                    border: 2px solid $magenta;
+                                    box-sizing: border-box;
+                                    box-shadow: 0px 0px 10px rgba(198, 0, 126, 0.35);
+                                    border-radius: 3px;
+                                    background: #FFF2FA;
+                                    padding: 14px;
+                                }
+                            }
+                        .input-holder{
+                           /*  min-height: 80px; */
+                           height: 150px;
+                            position: relative;
+                            display: flex;
+                            align-items: center;
+    
+                            > svg{
+                                position: absolute;
+                                left: 215px;
+                                top: 65px;
+                            }
+                            a.search-btn{
+                                @include searchBTN;  
+                                margin-left: 15px;    
+                            }
+                        }
+                        .error-message{
+                            color:$magenta;
+                            display: flex;
+                            align-items: center;
+                            p{
+                                margin-left: 10px;
+                            }
+                        }
                     }
                 }
             }

@@ -1,6 +1,9 @@
  import React, { useEffect, useState } from 'react';
 
+
+
 import Logo from '../../../public/images/mito_logo.svg';
+import Attention from '../../../public/images/attention.svg';
 import Arrow_left from '../../../public/images/arrow_left.svg';
 import Arrow_right from '../../../public/images/arrow_right.svg';
 import Chevron_right from '../../../public/images/right-arrow-chevron.svg';
@@ -8,47 +11,30 @@ import Chevron_left from '../../../public/images/left-arrow-chevron.svg';
 import Blue_Arrow_right from '../../../public/images/blue_arrow_right.svg';
 import Black_Arrow_right from '../../../public/images/black_arrow_right.svg';
 import Plane from '../../../public/images/plane.svg';
+import Calendar from '../../../public/images/calendar.svg';
 import DatePicker from "react-datepicker";
-import Select from 'react-select'
 import dayjs from 'dayjs'; 
 import axios from "axios";
 
-const SearchResult = () => {
+const SearchResult = ( props ) => {
 
-  const [selectedFlight, setSelectedFlight] = useState({
-    OriginIata: "BUD",
-    DestinIata : "BCN",
-    DepartureShortName: "Budapest",
-    ArrivalShortName : "Barcelona El Prat",
-    DepartureDate : "2020-07-01",
-    ReturnDate : "2020-07-01",
-  });
+  const [selectedFlight, setSelectedFlight] = useState(props.selected);
 
-  const [selectedDepTicket, setSelectedDepTicket] = useState(null );
+  const [isFlightReturn, setIsFlightReturn] = useState(selectedFlight.ReturnDate != null);
+
+  const [selectedDepTicket, setSelectedDepTicket] = useState(null);
 
   const [selectedRetTicket, setSelectedRetTicket] = useState(null);
 
-/*   const [selectedDepTicket, setSelectedDepTicket] = useState( {
-  OriginIata: "BUD",
-   DestinIata : "BCN",
-   DepartureDate : "2020-07-01T05:50:00+0200",
-   ArrivalDate : "2020-07-01T08:50:00+0200",
-   Price: 50,
-   TicketId: "",
- });
-
-  const [selectedRetTicket, setSelectedRetTicket] = useState( {
-   OriginIata: "BCN",
-   DestinIata : "BUD",
-   DepartureDate : "2020-07-01T05:50:00+0200",
-   ArrivalDate : "2020-07-01T08:50:00+0200",
-   Price: 60,
-   TicketId: "",
-
- }); */
-
   const [availableTickets, setAvailableTickets] = useState([]);
   const [availableReturnTickets, setAvailableReturnTickets] = useState([]);
+
+  const [returnDateMod, setReturnDateMod] = useState(null);
+  const [returnDateModError, setReturnDateModError] = useState("");
+
+  const [isLoading, setIsLoading] = useState(true);
+  const [isBasketEmpty, setIsBasketEmpty] = useState(true);
+  const [purchased, setPurchased] = useState(false);
 
   const prevDepartureDate = dayjs(selectedFlight.DepartureDate).subtract(1, 'd');
   const nextDepartureDate = dayjs(selectedFlight.DepartureDate).add(1, 'd');
@@ -56,28 +42,29 @@ const SearchResult = () => {
   const prevReturnDate = dayjs(selectedFlight.ReturnDate).subtract(1, 'd');
   const nextReturnDate = dayjs(selectedFlight.ReturnDate).add(1, 'd');
 
-  const [isLoading, setIsLoading] = useState(true);
-  const [purchased, setPurchased] = useState(false);
+  const now = dayjs();
 
   const SearchFlights = async () => {
-
-    const OriginIata = "BUD";
-    const DestinIata = "BCN";
-    const DepartureDate = "2020-07-01";
-    const ReturnDate = "2020-07-01";
 
 
     try {
 
       const responsedep = await axios.get(`https://mock-air.herokuapp.com/search?departureStation=${selectedFlight.OriginIata}&arrivalStation=${selectedFlight.DestinIata}&date=${selectedFlight.DepartureDate}`);
-      const responseret = await axios.get(`https://mock-air.herokuapp.com/search?departureStation=${selectedFlight.DestinIata}&arrivalStation=${selectedFlight.OriginIata}&date=${selectedFlight.ReturnDate}`);
-      
+     
+      if(isFlightReturn){
+
+        const responseret = await axios.get(`https://mock-air.herokuapp.com/search?departureStation=${selectedFlight.DestinIata}&arrivalStation=${selectedFlight.OriginIata}&date=${selectedFlight.ReturnDate}`);
+        setAvailableReturnTickets(responseret.data);
+      }
+
+  
       setAvailableTickets(responsedep.data);
-      setAvailableReturnTickets(responseret.data);
+      
       setIsLoading(false);
       
     } catch (error) {
       console.error(error);
+      setIsLoading(false);
     }
  }
 
@@ -103,9 +90,17 @@ const SearchResult = () => {
     })
  } */
 
- const TicketListItem = (selectedTicket) =>{
-
+ const TicketListItem = (selectedTicket, dir) =>{
   const Ticket = {...selectedTicket}
+if(dir === "dep")
+{
+  Ticket.fromDest = selectedFlight.DepartureShortName
+  Ticket.toDest = selectedFlight.ArrivalShortName
+}
+else{
+  Ticket.fromDest = selectedFlight.ArrivalShortName
+  Ticket.toDest = selectedFlight.DepartureShortName
+}
 
   return (
     <div className="ticket-listitem" >
@@ -119,8 +114,8 @@ const SearchResult = () => {
         </div>
         <div className="dep-destination">
           <div className="dep-destination-ports">
-          <span>{selectedFlight.DepartureShortName} - </span>
-          <span>{selectedFlight.ArrivalShortName}</span>
+          <span>{Ticket.fromDest} - </span>
+          <span>{Ticket.toDest}</span>
           </div>
           <div className="dep-destination-time">
             {dayjs(Ticket.DepartureDate).format("ddd hh:mm")} - {dayjs(Ticket.ArrivalDate).format("hh:mm")}
@@ -130,43 +125,63 @@ const SearchResult = () => {
   )
  }
 
+ const modifyReturnDate = () => {
+   
+  console.log(returnDateMod);
+  if(dayjs(returnDateMod).format("YYYY-MM-DD") < dayjs(now).format("YYYY-MM-DD") ){
+    console.log("time travel");
+    setReturnDateModError("Return date cannot be earlier than Today");
+  }
+  else if(dayjs(returnDateMod).format("YYYY-MM-DD") < dayjs(selectedFlight.DepartureDate).format("YYYY-MM-DD") ){
+    console.log("cheating!");
+    setReturnDateModError("Return date cannot be earlier Departure date");
+  }
+  else if(returnDateMod != null){
+    HandleRetDateChange(returnDateMod);
+    setIsFlightReturn(true)
+  }
+
+ }
 
 
  const HandlePurchase = () => {
-  if(!IsBasketEmpty()){
+
+  if(!isBasketEmpty){
     setPurchased(true);
+    setIsBasketEmpty(true);
   }
  }
 
  const HandleDepTicketSelect = (fare, ticket) => {
 
-  console.log(fare.price);
-  console.log(ticket);
+ // console.log(fare.price);
+ //console.log(ticket);
   const modDepTicket = {...selectedDepTicket}
   modDepTicket.Price = fare.price;
   modDepTicket.DepartureDate = ticket.departure;
   modDepTicket.ArrivalDate = ticket.arrival;
   modDepTicket.TicketId = fare.fareSellKey;
   setSelectedDepTicket(modDepTicket);
+  setIsBasketEmpty(false);
   
  }
 
  const HandleRetTicketSelect = (fare, ticket) => {
 
-    console.log(fare.price);
-    console.log(ticket);
+   // console.log(fare.price);
+   // console.log(ticket);
     const modRetTicket = {...selectedRetTicket}
     modRetTicket.Price = fare.price;
     modRetTicket.DepartureDate = ticket.departure;
     modRetTicket.TicketId = fare.fareSellKey;
     setSelectedRetTicket(modRetTicket);
+    setIsBasketEmpty(false);
 
  }
 
  const HandleDepDateChange = (newdate) => {
 
     newdate = dayjs(newdate).format("YYYY-MM-DD");
-    console.log(newdate);
     const modFllight = {...selectedFlight};
     modFllight.DepartureDate = newdate;
     setSelectedFlight(modFllight);
@@ -176,7 +191,7 @@ const SearchResult = () => {
  const HandleRetDateChange = (newdate) => {
 
   newdate = dayjs(newdate).format("YYYY-MM-DD");
-  console.log(newdate);
+//  console.log(newdate);
   const modFllight = {...selectedFlight};
   modFllight.ReturnDate = newdate;
   setSelectedFlight(modFllight);
@@ -190,22 +205,21 @@ const SearchResult = () => {
   setPurchased(false);
  }
 
+ const isDateToday = (date) => {
+  if(dayjs(date).format("YYYY-MM-DD") === dayjs(now).format("YYYY-MM-DD")){
+    return true
+  }
+  return false
+ }
+
  const GetTicketSum = () => {
    const depTicketPrice = (selectedDepTicket === null ? 0 : selectedDepTicket.Price);
    const retTicketPrice = (selectedRetTicket=== null ? 0 : selectedRetTicket.Price);
     return depTicketPrice+retTicketPrice;
  } 
 
- const IsBasketEmpty = () => {
-  if(selectedDepTicket === null && selectedRetTicket === null){
-    return true
-  }else{
-    return false;
-  }
- }
-
  const isButtonSelected = (ticketId , dir) => {
-  if(!IsBasketEmpty()){
+  if(!isBasketEmpty){
    if(dir === "dep"){
     if(selectedDepTicket?.TicketId === ticketId)
       return true
@@ -220,8 +234,6 @@ const SearchResult = () => {
 
  useEffect(() => {
   SearchFlights();
-
-
 }, [selectedFlight]);
   
     return (
@@ -235,12 +247,14 @@ const SearchResult = () => {
           <div className="confirm-modal-content">
             <div className="confirm-modal-tickets">
 
-                {TicketListItem(selectedDepTicket)}
-               {TicketListItem(selectedRetTicket)}
+                {TicketListItem(selectedDepTicket , "dep")}
+
+                { (isFlightReturn ? TicketListItem(selectedRetTicket, "ret") : "")}
+
             </div>
             <div className="confirm-modal-sum">
               <div className="confirm-modal-sum-price">
-                Total: <span class="price" >${GetTicketSum()}</span>
+                Total: <span className="price" >${GetTicketSum()}</span>
               </div>
               <div className="confirm-modal-sum-reset">
                 <a onClick={() => ResetSearch()}> No, Thanks. (Reset)</a>
@@ -263,7 +277,8 @@ const SearchResult = () => {
             </div> 
             <div className="arrows">
               <Arrow_right />
-              <Arrow_left />
+              {(isFlightReturn ? <Arrow_left /> : "")}
+              
             </div>
             <div className="to">
             {selectedFlight.ArrivalShortName}
@@ -278,19 +293,19 @@ const SearchResult = () => {
           </div>
           <div className="ticket-basket-flight-list" >
 
-            {( IsBasketEmpty() ?
+            {( isBasketEmpty ?
                 <div className="empty-list">
                   Choose an outbound flight
                 </div>
                : 
                 <>
                 {(selectedDepTicket != null ?
-                    TicketListItem(selectedDepTicket)
+                    TicketListItem(selectedDepTicket , "dep")
                 : 
                 "" )}
                  {(selectedRetTicket != null ?
 
-                    TicketListItem(selectedRetTicket)
+                    TicketListItem(selectedRetTicket , "ret")
                   : 
                   "" )}
                 </>            
@@ -301,7 +316,7 @@ const SearchResult = () => {
             Total <span className="price total">${GetTicketSum()}</span>
           </div>
           <div className="ticket-basket-purchase" >
-            <button onClick={() => HandlePurchase()} className={(IsBasketEmpty ? "" : "disabled" )} >Pay Now</button>
+            <button onClick={() => HandlePurchase()} className={(isBasketEmpty ? "disabled" : "" )} >Pay Now</button>
           </div>
          </div>
        </div>
@@ -328,10 +343,16 @@ const SearchResult = () => {
           </div>
           <div className="ticket-date-selection" >
             <div className="prev-date">
-               <a onClick={() => HandleDepDateChange(prevDepartureDate)}>
-                <Chevron_left />
-                <span>{dayjs(prevDepartureDate).format('ddd D MMMM')}</span>
+
+           { ( !isDateToday(selectedFlight.DepartureDate)  ?
+                    <a onClick={() => HandleDepDateChange(prevDepartureDate) }>
+                    <Chevron_left />
+                    <span>{dayjs(prevDepartureDate).format('ddd D MMMM')}</span>
                 </a>
+                    : 
+                    ""
+                    )
+              }
               </div>
               <div className="act-date">
                 {dayjs(selectedFlight.DepartureDate).format('dddd, D MMMM YYYY')}
@@ -369,7 +390,6 @@ const SearchResult = () => {
                     </div>
                     )
                   })
-                  
                   : 
                   "Empty"
                   )
@@ -393,14 +413,16 @@ const SearchResult = () => {
               </div>
             </div>
           {
-          (selectedFlight.ReturnDate != null ?
+          (isFlightReturn ?
             <>
               <div className="ticket-date-selection" >
                 <div className="prev-date">
+                {( !isDateToday(selectedFlight.DepartureDate)  ? 
                   <a onClick={() => HandleRetDateChange(prevReturnDate)} >
                     <Chevron_left />
                     <span>{dayjs(prevReturnDate).format('ddd D MMMM')}</span>
                   </a>
+                  :  "" )}
                   </div>
                   <div className="act-date">
                     {dayjs(selectedFlight.ReturnDate).format('dddd, D MMMM YYYY')}
@@ -439,7 +461,28 @@ const SearchResult = () => {
                 }  
               </div>
             </>
-            : "" )
+            : 
+            <div className="date-selection-return">
+              <div className="input-holder">
+                {/* <input placeholder="Return" className="date-selection-return" type="date" /> */}
+                <DatePicker
+                  className="date-selection-return"
+                    selected={returnDateMod}
+                    dateFormat="yyyy-MM-dd"
+                   onChange={(date) => setReturnDateMod(date)}
+                    isClearable={false}
+                    placeholderText="Return"
+                />
+                <Calendar />
+                <a onClick={modifyReturnDate} className="search-btn">Search</a>
+              </div>
+              {(returnDateModError != "" ? 
+              
+
+                <div className={`error-message`}><Attention /><p>{returnDateModError}</p>
+                </div> : "")}
+            </div>
+            )
           }
           
         </div>
