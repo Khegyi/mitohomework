@@ -7,11 +7,9 @@ import BackGroundImg from '../public/images/background.svg';
 
 
 export default function App() {
-
   const [flight, setFlight] = useState([]);
 
   const handleFlight = (data) => {
-   // console.log(data)
     setFlight(data);
   }
 

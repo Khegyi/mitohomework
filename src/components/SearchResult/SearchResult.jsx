@@ -39,6 +39,7 @@ const SearchResult = ( props ) => {
   const [purchased, setPurchased] = useState(false);
   const now = dayjs();
 
+  //Get available tickets for the selected Flights
   const SearchFlights = async () => {
 
     try {
@@ -54,40 +55,19 @@ const SearchResult = ( props ) => {
       setIsLoading(false);
     }
  }
-/*  const GetTicketList = (tickets) => {
-  
-    tickets.map((tick, i) => {
-      console.log(tick);
-      return (
-      <div key={i} className="ticket-grid-row" >
-        <div className="ticket-grid-coll" >
-          <span className="ticket_time">{dayjs(tick.departure).format('HH:MM')} <Black_Arrow_right/> {dayjs(tick.arrival).format('HH:MM')}</span>
-        </div>
-        {tick.fares.map((fare, y) => {
-          return (
-            <div key={y} className="ticket-grid-coll" >
-            { (i === 0 ?  <span className="ticket_def">{fare.bundle}</span> : "" ) }
-              <button>${fare.price}</button>
-            </div>
-          )
-        })}
-      </div>
-      )
-    })
- } */
-
- const TicketListItem = (selectedTicket, dir) =>{
+//Selected ticket list item module
+const TicketListItem = (selectedTicket, dir) =>{
   const Ticket = {...selectedTicket}
-if(dir === "dep")
-{
-  Ticket.fromDest = selectedFlight.DepartureShortName
-  Ticket.toDest = selectedFlight.ArrivalShortName
-}
-else{
-  Ticket.fromDest = selectedFlight.ArrivalShortName
-  Ticket.toDest = selectedFlight.DepartureShortName
-}
 
+  if(dir === "dep")
+  {
+    Ticket.fromDest = selectedFlight.DepartureShortName
+    Ticket.toDest = selectedFlight.ArrivalShortName
+  }
+  else{
+    Ticket.fromDest = selectedFlight.ArrivalShortName
+    Ticket.toDest = selectedFlight.DepartureShortName
+  }
   return (
     <div className="ticket-listitem" >
       <div className="mini-calendar">
@@ -110,15 +90,13 @@ else{
     </div>
   )
  }
+//Set Return date if previously was not selected
  const modifyReturnDate = () => {
    
-  console.log(returnDateMod);
   if(dayjs(returnDateMod).format("YYYY-MM-DD") < dayjs(now).format("YYYY-MM-DD") ){
-    console.log("time travel");
     setReturnDateModError("Return date cannot be earlier than Today");
   }
   else if(dayjs(returnDateMod).format("YYYY-MM-DD") < dayjs(selectedFlight.DepartureDate).format("YYYY-MM-DD") ){
-    console.log("cheating!");
     setReturnDateModError("Return date cannot be earlier Departure date");
   }
   else if(returnDateMod != null){
@@ -126,6 +104,7 @@ else{
     setIsFlightReturn(true)
   }
  }
+ // Show purchase modal
  const HandlePurchase = () => {
 
   if(!isBasketEmpty){
@@ -133,6 +112,7 @@ else{
     setIsBasketEmpty(true);
   }
  }
+ //Set Departure Tickets detail
  const HandleDepTicketSelect = (fare, ticket) => {
 
   const modDepTicket = {...selectedDepTicket}
@@ -143,6 +123,7 @@ else{
   setSelectedDepTicket(modDepTicket);
   setIsBasketEmpty(false);
  }
+  //Set Return Tickets detail
  const HandleRetTicketSelect = (fare, ticket) => {
 
     const modRetTicket = {...selectedRetTicket}
@@ -154,6 +135,7 @@ else{
     setIsBasketEmpty(false);
 
  }
+//Set Departure Date
  const HandleDepDateChange = (newdate) => {
 
     newdate = dayjs(newdate).format("YYYY-MM-DD");
@@ -162,6 +144,7 @@ else{
     setSelectedFlight(modFllight);
     setIsLoading(true);
  }
+ //Set Return Date
  const HandleRetDateChange = (newdate) => {
 
   newdate = dayjs(newdate).format("YYYY-MM-DD");
@@ -171,26 +154,30 @@ else{
   setIsLoading(true);
 
  }
+ //Open Basket
  const handleBasketCollapse = () => {
-   console.log(!isBasketClosed);
    setIsBasketClosed(!isBasketClosed);
  }
+ //Reset Basket, Return and Deparutre Ticket
  const ResetSearch = () => {
   setSelectedDepTicket(null);
   setSelectedRetTicket(null);
   setPurchased(false);
  }
+ //Check if date is Today
  const isDateToday = (date) => {
   if(dayjs(date).format("YYYY-MM-DD") === dayjs(now).format("YYYY-MM-DD")){
     return true
   }
   return false
  }
+ //Summarize Selected Ticket prices
  const GetTicketSum = () => {
    const depTicketPrice = (selectedDepTicket === null ? 0 : selectedDepTicket.Price);
    const retTicketPrice = (selectedRetTicket=== null ? 0 : selectedRetTicket.Price);
     return depTicketPrice+retTicketPrice;
  } 
+ //Check if Ticket for the selected Button was selected before, and should it be active.
  const isButtonSelected = (ticketId , dir) => {
   if(!isBasketEmpty){
    if(dir === "dep"){
@@ -204,11 +191,8 @@ else{
    }
   }
  }
-
-
  useEffect(() => {
   SearchFlights();
- 
 }, [selectedFlight]);
   
     return (
@@ -248,7 +232,6 @@ else{
             <div className="arrows">
               <Arrow_right />
               {(isFlightReturn ? <Arrow_left /> : "")}
-              
             </div>
             <div className="to">
             {selectedFlight.ArrivalShortName}
@@ -282,7 +265,6 @@ else{
                   "" )}
                 </>            
                )}
-
           </div>
           <div className="ticket-basket-flights-total" >
             Total <span className="price total">${GetTicketSum()}</span>
@@ -343,7 +325,6 @@ else{
                   <div className="throbber" ><div className="lds-ring"><div></div><div></div><div></div><div></div></div></div>
                   :
                 (availableTickets.length != 0 ?
-                  
                   availableTickets.map((tick, i) => {
                     return (
                     <div key={i} className="ticket-grid-row" >
@@ -362,7 +343,9 @@ else{
                     )
                   })
                   : 
-                  "Empty"
+                  <div className="no-ticket">
+                    <span>No Tickets Available</span>
+                  </div>
                   )
                )
               }
@@ -410,8 +393,8 @@ else{
                   (isLoading ? 
                     <div className="throbber" ><div className="lds-ring"><div></div><div></div><div></div><div></div></div></div>
                     :
+                  (availableTickets.length != 0 ?  
                   availableReturnTickets.map((tick, i) => {
-                   // console.log(tick);
                     return (
                     <div key={i} className="ticket-grid-row" >
                       <div className="ticket-grid-coll" >
@@ -428,6 +411,11 @@ else{
                     </div>
                     )
                   })
+                  : 
+                  <div className="no-ticket">
+                    <span>No Tickets Available</span>
+                  </div>
+                  )
                   )
                 }  
               </div>
@@ -435,7 +423,6 @@ else{
             : 
             <div className="date-selection-return">
               <div className="input-holder">
-                {/* <input placeholder="Return" className="date-selection-return" type="date" /> */}
                 <DatePicker
                   className="date-selection-return"
                     selected={returnDateMod}
@@ -448,14 +435,11 @@ else{
                 <a onClick={modifyReturnDate} className="search-btn">Search</a>
               </div>
               {(returnDateModError != "" ? 
-              
-
                 <div className={`error-message`}><Attention /><p>{returnDateModError}</p>
                 </div> : "")}
             </div>
             )
-          }
-          
+          } 
         </div>
        </div>
       </div>

@@ -23,10 +23,10 @@ const Destionation = ( props ) => {
   const [errorMessages, setErrorMessages] = useState([]);
   const [originPortLabel, setOriginPortLabel] = useState(false);
   const [destinPortLabel, setDestinPortLabel] = useState(false);
-  const [departureDateLabel, setdDepartureDateLabel] = useState(false);
-  const [returnDateLabel, setReturnDateLabel] = useState(false);
 
+  //Get Available Airports and Create options for select input
   const GetPorts = async () => {
+    
         try {
           const response = await axios.get('https://mock-air.herokuapp.com/asset/stations');
           const options =  response.data.map((cnt) => {
@@ -44,7 +44,9 @@ const Destionation = ( props ) => {
           console.error(error);
         }
   }
+  // Send Flight information to SearchResult Component
   const SearchFlights = async () => {
+
       if(Validation()){
         const DepartureDate = dayjs(departureDate).format('YYYY-MM-DD');
         let ReturnDate = null;
@@ -62,32 +64,26 @@ const Destionation = ( props ) => {
         props.setflight(selectedFight);
       }
   }
+  //Validate submit
   const Validation = () => {
     var now = dayjs().format("YYYY-MM-DD");
     const someerror = [];
-
       if(selectedOriginPort.length=== 0){
-      console.log("select origin");
-      someerror.push({ labelname :"origin", message: "Please select origin"});
+        someerror.push({ labelname :"origin", message: "Please select origin"});
       }
       if(selectedDestinPort.length=== 0){
-        console.log("select destin");
         someerror.push({ labelname :"destination", message: "Please select destination"});
       } 
       if(departureDate === null){
-        console.log("select departure");
         someerror.push({ labelname :"departure", message: "Please select departure date"});
       }
       if(dayjs(departureDate).format("YYYY-MM-DD") < now){
-        console.log("select departure");
         someerror.push({ labelname :"departure", message: "No timetravel!"});
       }
       if(dayjs(returnDate).format("YYYY-MM-DD") < now){
-        console.log("select departure");
         someerror.push({ labelname :"return", message: "No timetravel!"});
       }
       if(dayjs(returnDate).format("YYYY-MM-DD") < dayjs(departureDate).format("YYYY-MM-DD")){
-        console.log("select departure");
         someerror.push({ labelname :"return", message: "Must be after deparute date"});
       }
       setErrorMessages(someerror);
@@ -96,12 +92,11 @@ const Destionation = ( props ) => {
       }
       return false
   }
+  //Set Origin Airport and Filter Connections for Destination Airports
   const HandleOriginPortSelect = (originport) => {
 
       setSelectedOriginPort(originport);
-      
       if(originport != null){
-
         const connections = originport.connections.map((smt) =>  {
           const contact = ports.find((port) => {
               if(port.iata === smt.iata){
@@ -120,6 +115,7 @@ const Destionation = ( props ) => {
         setOriginPortLabel(false);
       }
   }
+  //Set Destination Airport
   const HandleDestinPortSelect = (destinport) => {
       setSelectedDestinPort(destinport);
       if(destinport != null){
@@ -128,7 +124,7 @@ const Destionation = ( props ) => {
         setDestinPortLabel(false);
       }
   }
-
+//Error message modul
   const errorMessage = (ename) => {
     let errormes = "";
     const thiserror = _.findWhere(errorMessages, {labelname: ename});
@@ -165,7 +161,6 @@ const Destionation = ( props ) => {
                 isSearchable={true}
                 name="origin"
                 options = {options}
-                
                 onChange={(val) => {
                   HandleOriginPortSelect(val);
                 }}
