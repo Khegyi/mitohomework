@@ -1,4 +1,4 @@
- import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import Logo from '../../../public/images/mito_logo.svg';
 import Attention from '../../../public/images/attention.svg';
@@ -18,179 +18,129 @@ const Destionation = ( props ) => {
   const [options, setoptions] = useState([]);
   const [filteredOptions, setFilteredOptions] = useState([]);
   const [selectedOriginPort, setSelectedOriginPort] = useState([]);
+
   const [selectedDestinPort, setSelectedDestinPort] = useState([]);
-
   const [errorMessages, setErrorMessages] = useState([]);
+  const [originPortLabel, setOriginPortLabel] = useState(false);
+  const [destinPortLabel, setDestinPortLabel] = useState(false);
+  const [departureDateLabel, setdDepartureDateLabel] = useState(false);
+  const [returnDateLabel, setReturnDateLabel] = useState(false);
 
-   const GetPorts = async () => {
-      try {
-        const response = await axios.get('https://mock-air.herokuapp.com/asset/stations');
-    //    console.log(response);
-        const options =  response.data.map((cnt) => {
-          const node = {
-            value: cnt.iata,
-            label: cnt.shortName,
-            connections: cnt.connections,
-          };
-          return node;
-        });
-       setoptions(options);
-       setports(response.data);
+  const GetPorts = async () => {
+        try {
+          const response = await axios.get('https://mock-air.herokuapp.com/asset/stations');
+          const options =  response.data.map((cnt) => {
+            const node = {
+              value: cnt.iata,
+              label: cnt.shortName,
+              connections: cnt.connections,
+            };
+            return node;
+          });
+        setoptions(options);
+        setports(response.data);
 
-      } catch (error) {
-        console.error(error);
-      }
-   }
-
-   const SearchFlights = async () => {
-
-    
-    if(Validation()){
-
-      const OriginIata = selectedOriginPort.value;
-      const DestinIata = selectedDestinPort.iata;
-      const DepartureDate = dayjs(departureDate).format('YYYY-MM-DD');
-      let ReturnDate = null;
-      if(returnDate !== null){
-         ReturnDate = dayjs(returnDate).format('YYYY-MM-DD');
+        } catch (error) {
+          console.error(error);
         }
-
-    //  console.log(props);
-
-      const selectedFight = {
-        OriginIata: selectedOriginPort.value,
-        DestinIata : selectedDestinPort.iata,
-        DepartureShortName: selectedOriginPort.label,
-        ArrivalShortName : selectedDestinPort.shortName,
-        DepartureDate : DepartureDate,
-        ReturnDate : ReturnDate,
+  }
+  const SearchFlights = async () => {
+      if(Validation()){
+        const DepartureDate = dayjs(departureDate).format('YYYY-MM-DD');
+        let ReturnDate = null;
+        if(returnDate !== null){
+          ReturnDate = dayjs(returnDate).format('YYYY-MM-DD');
+          }
+        const selectedFight = {
+          OriginIata: selectedOriginPort.value,
+          DestinIata : selectedDestinPort.iata,
+          DepartureShortName: selectedOriginPort.label,
+          ArrivalShortName : selectedDestinPort.shortName,
+          DepartureDate : DepartureDate,
+          ReturnDate : ReturnDate,
+        }
+        props.setflight(selectedFight);
       }
-
-      props.setflight(selectedFight);
-  
-/*       try {
-  
-        const responsedep = await axios.get(`https://mock-air.herokuapp.com/search?departureStation=${OriginIata}&arrivalStation=${DestinIata}&date=${DepartureDate}`);
-        const responseret = await axios.get(`https://mock-air.herokuapp.com/search?departureStation=${DestinIata}&arrivalStation=${OriginIata}&date=${ReturnDate}`);
-        
-        console.log(responsedep);
-        console.log(responseret);
-
-
-        
-       // getflight(responsedep);
-  
-      } catch (error) {
-        console.error(error);
-      } */
-    }
-    else{
-      console.log("nopi");
-
-    }
-
- }
- const Validation = () => {
-  var now = dayjs().format("YYYY-MM-DD");
-  const someerror = [];
-
-    if(selectedOriginPort.length=== 0){
-     console.log("select origin");
-     someerror.push({ labelname :"origin", message: "Please select origin"});
-    }
-    if(selectedDestinPort.length=== 0){
-      console.log("select destin");
-      someerror.push({ labelname :"destination", message: "Please select destination"});
-    } 
-    if(departureDate === null){
-      console.log("select departure");
-      someerror.push({ labelname :"departure", message: "Please select departure date"});
-    }
-
-    if(dayjs(departureDate).format("YYYY-MM-DD") < now){
-      console.log("select departure");
-      someerror.push({ labelname :"departure", message: "No timetravel!"});
-    }
-    if(dayjs(returnDate).format("YYYY-MM-DD") < now){
-      console.log("select departure");
-      someerror.push({ labelname :"return", message: "No timetravel!"});
-    }
-
-    if(dayjs(returnDate).format("YYYY-MM-DD") < dayjs(departureDate).format("YYYY-MM-DD")){
-      console.log("select departure");
-      someerror.push({ labelname :"return", message: "Must be after deparute date"});
-    }
-  //  console.error(someerror);
-    setErrorMessages(someerror);
-    /* if(returnDate === null) console.log("select return"); */
-
-    if(someerror.length === 0){
-      return true
-    }
-    return false
- }
-
-   const HandleOriginPortSelect = (originport, e) => {
-
-    localStorage.setItem("SelectedOriginPort", originport.value);
-
-     setSelectedOriginPort(originport);
-
-     
-     if(originport != null){
-
-      const connections = originport.connections.map((smt) =>  {
-        const contact = ports.find((port) => {
-            if(port.iata === smt.iata){
-              port.value = port.iata;
-              port.label = port.shortName;
-              return port;
-            }
-          })
-          return contact;
-      });
-  
-      setFilteredOptions(connections);
-   //   console.log(connections);
-     }else{
-      setFilteredOptions([]);
-     }
-    console.log(originport);
-   // console.log(e);
-  
   }
-  
-  const HandleDestinPortSelect = (destinport, e) => {
+  const Validation = () => {
+    var now = dayjs().format("YYYY-MM-DD");
+    const someerror = [];
 
-    setSelectedDestinPort(destinport);
-    localStorage.setItem("SelectedDestinPort", destinport.iata);
-
-   console.log(destinport);
-  // console.log(e);
- 
- }
-
- const errorMessage = (ename) => {
-
-//console.log(errorMessages);
-
-let errormes = "";
-  const thiserror = _.findWhere(errorMessages, {labelname: ename});
-  if(thiserror != undefined){
-     errormes = thiserror.message;
-     return (
-      <div className={`error-message ${ename}`}><Attention /><p>{errormes}</p></div>
-      )
+      if(selectedOriginPort.length=== 0){
+      console.log("select origin");
+      someerror.push({ labelname :"origin", message: "Please select origin"});
+      }
+      if(selectedDestinPort.length=== 0){
+        console.log("select destin");
+        someerror.push({ labelname :"destination", message: "Please select destination"});
+      } 
+      if(departureDate === null){
+        console.log("select departure");
+        someerror.push({ labelname :"departure", message: "Please select departure date"});
+      }
+      if(dayjs(departureDate).format("YYYY-MM-DD") < now){
+        console.log("select departure");
+        someerror.push({ labelname :"departure", message: "No timetravel!"});
+      }
+      if(dayjs(returnDate).format("YYYY-MM-DD") < now){
+        console.log("select departure");
+        someerror.push({ labelname :"return", message: "No timetravel!"});
+      }
+      if(dayjs(returnDate).format("YYYY-MM-DD") < dayjs(departureDate).format("YYYY-MM-DD")){
+        console.log("select departure");
+        someerror.push({ labelname :"return", message: "Must be after deparute date"});
+      }
+      setErrorMessages(someerror);
+      if(someerror.length === 0){
+        return true
+      }
+      return false
   }
- }
+  const HandleOriginPortSelect = (originport) => {
 
+      setSelectedOriginPort(originport);
+      
+      if(originport != null){
+
+        const connections = originport.connections.map((smt) =>  {
+          const contact = ports.find((port) => {
+              if(port.iata === smt.iata){
+                port.value = port.iata;
+                port.label = port.shortName;
+                return port;
+              }
+            })
+            return contact;
+        });
+        setOriginPortLabel(true);
+        setFilteredOptions(connections);
+        
+      }else{
+        setFilteredOptions([]);
+        setOriginPortLabel(false);
+      }
+  }
+  const HandleDestinPortSelect = (destinport) => {
+      setSelectedDestinPort(destinport);
+      if(destinport != null){
+       setDestinPortLabel(true);
+      }else{
+        setDestinPortLabel(false);
+      }
+  }
+
+  const errorMessage = (ename) => {
+    let errormes = "";
+    const thiserror = _.findWhere(errorMessages, {labelname: ename});
+      if(thiserror != undefined){
+        errormes = thiserror.message;
+        return (
+          <div className={`error-message ${ename}`}><Attention /><p>{errormes}</p></div>
+          )
+      }
+  }
 
   useEffect(() => {
-   // console.log(localStorage.getItem("SelectedOriginPort"))
-   // console.log(localStorage.getItem("SelectedDestinPort"))
-
-
-
     GetPorts();
   }, []);
   
@@ -204,42 +154,38 @@ let errormes = "";
       <div className="destination-content">
         <div className="flight-selection">
           <div className="flight-selection-origin input-holder">
-             {/* <input placeholder="Origin" onFocus={HandleAirPortSelect} className="flight-selection-origin" type="text" /> */}
+          <label className={(originPortLabel ? "shown" : "")}>Origin</label>
              <Select
                 id="origin"
                 className="basic-single"
                 classNamePrefix="select"
+                instanceId="origin"
                 placeholder="Origin"
-              /*  defaultValue={options[0]} */
                 isClearable={true}
                 isSearchable={true}
                 name="origin"
                 options = {options}
                 
-                onChange={(val, e) => {
-                  HandleOriginPortSelect(val, e);
+                onChange={(val) => {
+                  HandleOriginPortSelect(val);
                 }}
               />
-{/*              <select placeholder="Origin" onFocus={HandleAirPortSelect} className="flight-selection-origin" >
-
-             </select> */}
              {errorMessage("origin")}
-            {/*  <div className="error-message origin"><Attention /><p>You shall not pass</p></div> */}
           </div>
           <div className="flight-selection-destination input-holder">
-          {/*   <input placeholder="Destination" className="flight-selection-destionation" type="text" />  */}
+              <label className={(destinPortLabel ? "shown" : "")}>Destination</label>
               <Select
                   id="destination"
+                  instanceId="destination"
                   className="basic-single"
                   classNamePrefix="select"
                   placeholder="Destination"
-                  defaultValue="BUD"
                   isClearable={true}
                   isSearchable={true}
                   name="destination"
                   options = {filteredOptions}
-                  onChange={(val, e) => {
-                    HandleDestinPortSelect(val, e);
+                  onChange={(val) => {
+                    HandleDestinPortSelect(val);
                   }}
                 />
            {errorMessage("destination")}
@@ -247,9 +193,8 @@ let errormes = "";
         </div>
         <div className="date-selection">
           <div className="date-selection-origin input-holder">
-          {/*   <input placeholder="Departure" className="date-selection-departure" type="date" /> */}
             <DatePicker
-            className="date-selection-departure"
+             className="date-selection-departure"
               selected={departureDate}
               dateFormat="yyyy-MM-dd"
               onChange={(date) => setDepartureDate(date)}
@@ -261,7 +206,6 @@ let errormes = "";
             
           </div>
           <div className="date-selection-return input-holder">
-            {/* <input placeholder="Return" className="date-selection-return" type="date" /> */}
             <DatePicker
               className="date-selection-return"
                 selected={returnDate}

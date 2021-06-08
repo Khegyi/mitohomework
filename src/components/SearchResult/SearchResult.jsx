@@ -1,11 +1,9 @@
- import React, { useEffect, useState } from 'react';
-
-
-
+import React, { useEffect, useState } from 'react';
 import Logo from '../../../public/images/mito_logo.svg';
 import Attention from '../../../public/images/attention.svg';
 import Arrow_left from '../../../public/images/arrow_left.svg';
 import Arrow_right from '../../../public/images/arrow_right.svg';
+import Arrow_Down from '../../../public/images/down-arrow-chevron.svg'
 import Chevron_right from '../../../public/images/right-arrow-chevron.svg';
 import Chevron_left from '../../../public/images/left-arrow-chevron.svg';
 import Blue_Arrow_right from '../../../public/images/blue_arrow_right.svg';
@@ -20,10 +18,7 @@ const SearchResult = ( props ) => {
 
   const [selectedFlight, setSelectedFlight] = useState(props.selected);
 
-  const [isFlightReturn, setIsFlightReturn] = useState(selectedFlight.ReturnDate != null);
-
   const [selectedDepTicket, setSelectedDepTicket] = useState(null);
-
   const [selectedRetTicket, setSelectedRetTicket] = useState(null);
 
   const [availableTickets, setAvailableTickets] = useState([]);
@@ -32,42 +27,33 @@ const SearchResult = ( props ) => {
   const [returnDateMod, setReturnDateMod] = useState(null);
   const [returnDateModError, setReturnDateModError] = useState("");
 
-  const [isLoading, setIsLoading] = useState(true);
-  const [isBasketEmpty, setIsBasketEmpty] = useState(true);
-  const [purchased, setPurchased] = useState(false);
-
   const prevDepartureDate = dayjs(selectedFlight.DepartureDate).subtract(1, 'd');
   const nextDepartureDate = dayjs(selectedFlight.DepartureDate).add(1, 'd');
-
   const prevReturnDate = dayjs(selectedFlight.ReturnDate).subtract(1, 'd');
   const nextReturnDate = dayjs(selectedFlight.ReturnDate).add(1, 'd');
 
+  const [isFlightReturn, setIsFlightReturn] = useState(selectedFlight.ReturnDate != null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isBasketEmpty, setIsBasketEmpty] = useState(true);
+  const [isBasketClosed, setIsBasketClosed] = useState(false);
+  const [purchased, setPurchased] = useState(false);
   const now = dayjs();
 
   const SearchFlights = async () => {
 
-
     try {
-
       const responsedep = await axios.get(`https://mock-air.herokuapp.com/search?departureStation=${selectedFlight.OriginIata}&arrivalStation=${selectedFlight.DestinIata}&date=${selectedFlight.DepartureDate}`);
-     
       if(isFlightReturn){
-
         const responseret = await axios.get(`https://mock-air.herokuapp.com/search?departureStation=${selectedFlight.DestinIata}&arrivalStation=${selectedFlight.OriginIata}&date=${selectedFlight.ReturnDate}`);
         setAvailableReturnTickets(responseret.data);
       }
-
-  
       setAvailableTickets(responsedep.data);
-      
-      setIsLoading(false);
-      
+      setIsLoading(false);     
     } catch (error) {
       console.error(error);
       setIsLoading(false);
     }
  }
-
 /*  const GetTicketList = (tickets) => {
   
     tickets.map((tick, i) => {
@@ -124,7 +110,6 @@ else{
     </div>
   )
  }
-
  const modifyReturnDate = () => {
    
   console.log(returnDateMod);
@@ -140,10 +125,7 @@ else{
     HandleRetDateChange(returnDateMod);
     setIsFlightReturn(true)
   }
-
  }
-
-
  const HandlePurchase = () => {
 
   if(!isBasketEmpty){
@@ -151,11 +133,8 @@ else{
     setIsBasketEmpty(true);
   }
  }
-
  const HandleDepTicketSelect = (fare, ticket) => {
 
- // console.log(fare.price);
- //console.log(ticket);
   const modDepTicket = {...selectedDepTicket}
   modDepTicket.Price = fare.price;
   modDepTicket.DepartureDate = ticket.departure;
@@ -163,22 +142,18 @@ else{
   modDepTicket.TicketId = fare.fareSellKey;
   setSelectedDepTicket(modDepTicket);
   setIsBasketEmpty(false);
-  
  }
-
  const HandleRetTicketSelect = (fare, ticket) => {
 
-   // console.log(fare.price);
-   // console.log(ticket);
     const modRetTicket = {...selectedRetTicket}
     modRetTicket.Price = fare.price;
     modRetTicket.DepartureDate = ticket.departure;
+    modRetTicket.ArrivalDate = ticket.arrival;
     modRetTicket.TicketId = fare.fareSellKey;
     setSelectedRetTicket(modRetTicket);
     setIsBasketEmpty(false);
 
  }
-
  const HandleDepDateChange = (newdate) => {
 
     newdate = dayjs(newdate).format("YYYY-MM-DD");
@@ -187,37 +162,35 @@ else{
     setSelectedFlight(modFllight);
     setIsLoading(true);
  }
-
  const HandleRetDateChange = (newdate) => {
 
   newdate = dayjs(newdate).format("YYYY-MM-DD");
-//  console.log(newdate);
   const modFllight = {...selectedFlight};
   modFllight.ReturnDate = newdate;
   setSelectedFlight(modFllight);
   setIsLoading(true);
 
  }
-
+ const handleBasketCollapse = () => {
+   console.log(!isBasketClosed);
+   setIsBasketClosed(!isBasketClosed);
+ }
  const ResetSearch = () => {
   setSelectedDepTicket(null);
   setSelectedRetTicket(null);
   setPurchased(false);
  }
-
  const isDateToday = (date) => {
   if(dayjs(date).format("YYYY-MM-DD") === dayjs(now).format("YYYY-MM-DD")){
     return true
   }
   return false
  }
-
  const GetTicketSum = () => {
    const depTicketPrice = (selectedDepTicket === null ? 0 : selectedDepTicket.Price);
    const retTicketPrice = (selectedRetTicket=== null ? 0 : selectedRetTicket.Price);
     return depTicketPrice+retTicketPrice;
  } 
-
  const isButtonSelected = (ticketId , dir) => {
   if(!isBasketEmpty){
    if(dir === "dep"){
@@ -232,8 +205,10 @@ else{
   }
  }
 
+
  useEffect(() => {
   SearchFlights();
+ 
 }, [selectedFlight]);
   
     return (
@@ -246,11 +221,8 @@ else{
           </div>
           <div className="confirm-modal-content">
             <div className="confirm-modal-tickets">
-
-                {TicketListItem(selectedDepTicket , "dep")}
-
-                { (isFlightReturn ? TicketListItem(selectedRetTicket, "ret") : "")}
-
+                { (selectedDepTicket != null ? TicketListItem(selectedDepTicket, "dep") : "")}
+                { (selectedRetTicket != null ? TicketListItem(selectedRetTicket, "ret") : "")}
             </div>
             <div className="confirm-modal-sum">
               <div className="confirm-modal-sum-price">
@@ -266,11 +238,9 @@ else{
       : "" 
       )}
     <div className="result-selection">
-
       <div className="result-selection-header">
         <Logo className="mito-logo" />
         <div className="result-selected-ports">
-          
             <div className="from">
               <p>Leaving from</p>
                 {selectedFlight.DepartureShortName}
@@ -288,11 +258,13 @@ else{
       <div className="result-selection-content">
        <div className="result-selection-left" >
          <div className="ticket-basket" >
-          <div className="ticket-basket-flights" >
-            Flights <span className="price sum">${GetTicketSum()}</span>
+          <div onClick={() => handleBasketCollapse()} className="ticket-basket-flights" >
+            <span>Flights</span> 
+            <span className={`arrow-down ${(isBasketClosed ? "" : "turned")}`}><Arrow_Down /></span>
+            <span className="price sum">${GetTicketSum()}</span>
           </div>
-          <div className="ticket-basket-flight-list" >
-
+          <div className={`ticket-basket-flight-list ${(isBasketClosed ? "collapsed" : "")}`} >
+          
             {( isBasketEmpty ?
                 <div className="empty-list">
                   Choose an outbound flight
@@ -324,7 +296,6 @@ else{
         <div className="result-selection-title">
           <Plane />
           <h2>Select Flight</h2>
-
         </div>
         <div className="result-selection-table outbound">
           <div className="ticket-header" >
@@ -444,7 +415,7 @@ else{
                     return (
                     <div key={i} className="ticket-grid-row" >
                       <div className="ticket-grid-coll" >
-                        <span className="ticket_time">{dayjs(tick.departure).format('hh:hh')} <Black_Arrow_right/> {dayjs(tick.arrival).format('hh:hh')}</span>
+                        <span className="ticket_time">{dayjs(tick.departure).format('hh:mm')} <Black_Arrow_right/> {dayjs(tick.arrival).format('hh:mm')}</span>
                       </div>
                       {tick.fares.map((fare, y) => {
                         return (

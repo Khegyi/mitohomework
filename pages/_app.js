@@ -21,14 +21,12 @@ export default function App() {
 
     return (
       <div className="content">
-        <BackGroundImg className="content-bg" />
-
+        <img className="background" src="/images/background.svg" />
         {(flight.length !== 0 ? 
           <SearchResult selected={flight} />
         :
           <Destination setflight={(t) => handleFlight(t)}  />
-        )
-          
+        )  
         }
       </div>
    )
