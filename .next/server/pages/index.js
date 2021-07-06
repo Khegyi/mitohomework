@@ -105,7 +105,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react/jsx-dev-runtime */ "react/jsx-dev-runtime");
 /* harmony import */ var react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_0__);
 
-var _jsxFileName = "D:\\Git\\mito\\pages\\index.js";
+var _jsxFileName = "D:\\Git\\mitotest\\mitohomework\\pages\\index.js";
 
 // import React, { useCallback, useEffect, useRef, useState } from 'react';
 const AppLayout = () => {
