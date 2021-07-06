@@ -1,8 +1,13 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-const About = () => {
-  const router = useRouter()
+
+const About = (props) => {
+
+  const router = useRouter();
+
+  console.log(props);
+
   const {
     query: { id },
   } = router

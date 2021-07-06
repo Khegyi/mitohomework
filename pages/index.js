@@ -4,26 +4,26 @@ import SearchResult from '../src/components/SearchResult/SearchResult';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 
-export default function App() {
-  const [flight, setFlight] = useState([]);
+export default function Flight(props) {
+ // const [flight, setFlight] = useState([]);
 
   const router = useRouter();
-
-  const handleFlight = (data) => {
+  console.log(props);
+/*   const handleFlight = (data) => {
     setFlight(data);
   //  router.push({pathname:"/about", query: {id: "test"} });
-  }
+  } */
 
   useEffect(() => {
 
-  }, [flight]);
+  }, [props.flight]);
 
     return (
         <>
-          {(flight.length !== 0 ? 
-            <SearchResult selected={flight} />
+          {(props.flight.length !== 0 ? 
+            <SearchResult selected={props.flight} />
             :
-              <Destination setflight={(t) => handleFlight(t)}  />
+              <Destination setflight={(t) => props.handleFlight(t)}  />
             )  
           }
            <Link href={{

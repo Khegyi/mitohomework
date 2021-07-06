@@ -1,5 +1,7 @@
 import Link from 'next/link';
-export default function Home() {
+
+const Home = (props) =>{
+  console.log(props);
   return (
     <div>
        <Link href="/about">
@@ -11,3 +13,4 @@ export default function Home() {
     </div>
   )
 }
+export default Home
