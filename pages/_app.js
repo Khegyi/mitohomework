@@ -1,33 +1,31 @@
 import React, { useEffect,useState } from 'react';
+import { useRouter } from 'next/router';
 import '../src/styles/global.scss';
 import 'react-datepicker/dist/react-datepicker-cssmodules.min.css';
-import Destination from '../src/components/Destination/Destination';
-import SearchResult from '../src/components/SearchResult/SearchResult';
-import BackGroundImg from '../public/images/background.svg';
 
 
-export default function App() {
+function App({ Component, pageProps }) {
+
   const [flight, setFlight] = useState([]);
-
+  const router = useRouter();
   const handleFlight = (data) => {
     setFlight(data);
+  //  router.push({pathname:"/about", query: {id: "test"} });
   }
 
-  useEffect(() => {
+pageProps = {
+  text: "testflight",
+  flight,
+  handleFlight,
+};
 
-  }, [flight]);
+  return(
+    <div className="content">
+      <img className="background" src="/images/background.svg" /> 
+      <Component {...pageProps} />
+  </div>
+  
+  )
+}
 
-    return (
-      <div className="content">
-        <img className="background" src="/images/background.svg" />
-        {(flight.length !== 0 ? 
-          <SearchResult selected={flight} />
-        :
-          <Destination setflight={(t) => handleFlight(t)}  />
-        )  
-        }
-      </div>
-   )
-
-
-  }
+export default App
